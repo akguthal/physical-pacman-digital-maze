@@ -9,7 +9,7 @@ var config = {
 };
 var fbase = firebase.initializeApp(config);
 fbase.database().ref("/").set({ //initialize light to false in firebase
-  light: false
+  move: -1
 });
 
 var counter = 0;
@@ -85,35 +85,47 @@ function move(dir, speed) {
 }
 
 window.onkeydown = (event) => {
-  if (event.keyCode == 39) {
-    move(0, 5);
-    // fbase.database().ref("/moves").set({
-    //   [counter]: "right"
-    // });
-    fbase.database().ref("/").set({ //turn light on when we move right
-      light: true
-    });
-  }
-  if (event.keyCode == 37) {
-    move(1, 5);
-    // fbase.database().ref("/moves").set({
-    //   [counter]: "left"
-    // })   
-    fbase.database().ref("/").set({ //turn light off when we move left
-      light: false
-    }); 
-  }
-  if (event.keyCode == 40) {
-    move(2, 5);
-    // fbase.database().ref("/moves").set({
-    //   [counter]: "down"
-    // })
-  }
-  if (event.keyCode == 38) {
-    move(3, 5);
-    // fbase.database().ref("/moves").set({
-    //   [counter]: "up"
-    // })
-  }
-  counter++
+  fbase.database().ref("/").once('value').then(function(snapshot) {
+    if (snapshot.val().move == -1) {
+      if (event.keyCode == 39) {
+        fbase.database().ref("/").set({ //turn light on when we move right
+          move: 1
+        })
+        .then(function(_) {
+          move(0, 5);
+        });
+      }
+      if (event.keyCode == 37) {
+        fbase.database().ref("/").set({ //turn light off when we move left
+          move: 0
+        })
+        .then(function(_) {
+          move(1, 5);
+        });
+      }
+      if (event.keyCode == 40) {
+        fbase.database().ref("/").set({ //turn light off when we move left
+          move: 3
+        })
+        .then(function(_) {
+          move(2, 5);
+        });
+      }
+      if (event.keyCode == 38) {
+        fbase.database().ref("/").set({ //turn light off when we move left
+          move: 2
+        })
+        .then(function(_) {
+          move(3, 5);
+        }); 
+      }
+      counter++      
+    }
+  })
 }
+
+// window.onkeyup = (event) => {
+//   fbase.database().ref("/").set({
+//     move: -1
+//   });
+// }
