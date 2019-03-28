@@ -9,7 +9,7 @@ var config = {
 };
 var fbase = firebase.initializeApp(config);
 fbase.database().ref("/").set({ //initialize light to false in firebase
-  move: -1
+  move: 0
 });
 
 var counter = 0;
@@ -18,10 +18,13 @@ var counter = 0;
 var myGamePiece;
 
 function startGame() {
-    myGamePiece = new component(30, 30, "sprite.png", 50, 50);
+    myGamePiece = new component(30, 30, "sprite.png", 250, 250);
     myGameArea.start();
     myGamePiece.update();
     this.interval = setInterval(updateGameArea, 200);
+    fbase.database().ref("/").set({ //move down
+      move: -1
+    })
 }
 
 var myGameArea = {
@@ -57,75 +60,73 @@ function updateGameArea() {
 
 function move(dir, speed) {
   myGameArea.clear();
-  if (dir == 0){
-    myGamePiece.x += speed;
-    if (myGamePiece.x >= (myGameArea.canvas.width-myGamePiece.width)) {
-      myGamePiece.x = (myGameArea.canvas.width-myGamePiece.width);
-    }
-  }
-  else if (dir == 1) {
+  if (dir == 1) {
     myGamePiece.x -= speed;
     if (myGamePiece.x <= 0) {
       myGamePiece.x = 0;
     }    
-  }
-  else if (dir == 2) {
-    myGamePiece.y += speed;
-    if (myGamePiece.y >= (myGameArea.canvas.height-myGamePiece.height)) {
-      myGamePiece.y = (myGameArea.canvas.height-myGamePiece.height);
-    }    
+  }  
+  else if (dir == 2){
+    myGamePiece.x += speed;
+    if (myGamePiece.x >= (myGameArea.canvas.width-myGamePiece.width)) {
+      myGamePiece.x = (myGameArea.canvas.width-myGamePiece.width);
+    }
   }
   else if (dir == 3) {
     myGamePiece.y -= speed;
     if (myGamePiece.y <= 0) {
       myGamePiece.y = 0;
     }     
+  }  
+  else if (dir == 4) {
+    myGamePiece.y += speed;
+    if (myGamePiece.y >= (myGameArea.canvas.height-myGamePiece.height)) {
+      myGamePiece.y = (myGameArea.canvas.height-myGamePiece.height);
+    }    
   }
   myGamePiece.update();
 }
 
 window.onkeydown = (event) => {
   fbase.database().ref("/").once('value').then(function(snapshot) {
-    if (snapshot.val().move == -1) {
-      if (event.keyCode == 39) {
-        fbase.database().ref("/").set({ //turn light on when we move right
+    if (snapshot.val().move == -1) { 
+      if (event.keyCode == 37) {
+        console.log('left');
+        fbase.database().ref("/").set({ //move left
           move: 1
         })
         .then(function(_) {
-          move(0, 5);
+          move(1, 30);
         });
-      }
-      if (event.keyCode == 37) {
-        fbase.database().ref("/").set({ //turn light off when we move left
-          move: 0
-        })
-        .then(function(_) {
-          move(1, 5);
-        });
-      }
-      if (event.keyCode == 40) {
-        fbase.database().ref("/").set({ //turn light off when we move left
-          move: 3
-        })
-        .then(function(_) {
-          move(2, 5);
-        });
-      }
-      if (event.keyCode == 38) {
-        fbase.database().ref("/").set({ //turn light off when we move left
+      }      
+      if (event.keyCode == 39) { //move right
+        console.log('right');
+        fbase.database().ref("/").set({ 
           move: 2
         })
         .then(function(_) {
-          move(3, 5);
+          move(2, 30);
+        });
+      }
+      if (event.keyCode == 38) {
+        console.log('up');
+        fbase.database().ref("/").set({ //move up
+          move: 3
+        })
+        .then(function(_) {
+          move(3, 30);
         }); 
+      }      
+      if (event.keyCode == 40) {
+        console.log('down');
+        fbase.database().ref("/").set({ //move down
+          move: 4
+        })
+        .then(function(_) {
+          move(4, 30);
+        });
       }
       counter++      
     }
   })
 }
-
-// window.onkeyup = (event) => {
-//   fbase.database().ref("/").set({
-//     move: -1
-//   });
-// }
